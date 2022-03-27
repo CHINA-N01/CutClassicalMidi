@@ -2,6 +2,7 @@ import os
 # import midi
 import mido
 
+save_path='cut\\'
 
 path = 'data\\'
 files = os.listdir(path)
@@ -9,8 +10,8 @@ for file in files:
     f = mido.MidiFile(path+file)
     fnum = 0
     ftime = 0
-    maxtime = 60
-
+    maxtime = 30
+    maxFileLen=120
     mid = mido.MidiFile()
     t = mido.MidiTrack()
     mid.tracks.append(t)
@@ -19,16 +20,13 @@ for file in files:
     mid.ticks_per_beat = f.ticks_per_beat
     for i, track in enumerate(f.tracks):
 
-        print('track{}:{} \nlen:{}'.format(i, track.name, len(track)))
+       # print('track{}:{} \nlen:{}'.format(i, track.name, len(track)))
         for note in track:
-            if j <= 20:
-                j += 1
-                print(note)
             tt = mido.tick2second(note.time, mid.ticks_per_beat, 500000)
             ftime += tt
             t.append(note)
             if ftime >= maxtime:
-                mid.save("cut/{}_part_{}.mid".format(file, fnum))
+                mid.save(save_path+"{}_part_{}.mid".format(file, fnum))
 
                 mid = mido.MidiFile()
                 mid.ticks_per_beat = f.ticks_per_beat
@@ -37,18 +35,15 @@ for file in files:
 
                 for msg in f.tracks[0]:
                     t.append(msg)
-                ftime -= 60
+                ftime -= maxtime
                 fnum += 1
-                if fnum > 60:
+                if fnum > maxFileLen:
                     exit(1)
 
     print('\nmid:')
     print(fnum)
+    print('\nfile:{}'.format(file))
     j = 0
-    for note in mid:
-        if j <= 20:
-            j += 1
-            print(note)
-    mid.save("cut/{}_part_{}.mid".format(file, fnum))
+    mid.save(save_path+"/{}_part_{}.mid".format(file, fnum))
 
 
