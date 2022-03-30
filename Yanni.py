@@ -3,9 +3,9 @@ import sys
 # import midi
 import mido
 new_tempo=500000
-save_path='cut_pop\\'
+save_path='cut_yanni\\'
 metad=[]
-path = 'data_pop\\'
+path = 'data_yanni\\'
 sum=0
 fnum=0
 if not os.path.exists(save_path.rstrip('\\')):
@@ -20,7 +20,7 @@ for file in files:
     f = mido.MidiFile(path+file)
     fnum = 0
     ftime = 0
-    maxtime = 30
+    maxtime = 60
     maxFileLen=120
     mid = mido.MidiFile()
     t = mido.MidiTrack()
@@ -29,6 +29,8 @@ for file in files:
     j = 0
     mid.ticks_per_beat = f.ticks_per_beat
     for i, track in enumerate(f.tracks):
+        #(f)
+        #exit(0)
 
        # print('track{}:{} \nlen:{}'.format(i, track.name, len(track)))
         for note in track:
@@ -68,6 +70,21 @@ for file in files:
                 fnum += 1
                 if fnum > maxFileLen:
                     exit(1)
+
+    mid.save(save_path + "{}_part_{}.mid".format(file, fnum))
+
+    mid = mido.MidiFile()
+    mid.ticks_per_beat = f.ticks_per_beat
+    t = mido.MidiTrack()
+    mid.tracks.append(t)
+
+    for msg in metad:
+        t.append(msg)
+    t.append(tempoEvent)
+    ftime -= maxtime
+    fnum += 1
+    if fnum > maxFileLen:
+        exit(1)
 
     print('midi nums:{}'.format(fnum))
     print('f tick:{},mid tick:{}'.format(f.ticks_per_beat,mid.ticks_per_beat))
