@@ -14,13 +14,17 @@ if not os.path.exists(save_path.rstrip('\\')):
     print(path + ' 创建成功')
 files = os.listdir(path)
 for file in files:
+
     sum+=fnum
     tempoEvent = []
     metad = []
     f = mido.MidiFile(path+file)
     fnum = 0
     ftime = 0
-    maxtime = 60
+    if file=='4.mid':
+        maxtime=180
+    else:
+        maxtime=60
     maxFileLen=120
     mid = mido.MidiFile()
     t = mido.MidiTrack()
@@ -40,12 +44,25 @@ for file in files:
                 if dnote['type'] == 'set_tempo':
                     t.append(note)
                     tempoEvent = note
-                if dnote['type'] == 'time_signature' or dnote['type'] == 'key_signature':
-                    t.append(note)
-                    metad.append(note)
-                if dnote['type'] == 'set_tempo':
+                    tt = mido.tick2second(note.time, mid.ticks_per_beat, new_tempo)
+                    ftime += tt
                     new_tempo = dnote['tempo']
                     print(new_tempo)
+                elif dnote['type'] == 'time_signature':
+                    t.append(note)
+                    time_sig = note
+                    tt = mido.tick2second(note.time, mid.ticks_per_beat, new_tempo)
+                    ftime += tt
+                elif dnote['type'] == 'key_signature':
+                    t.append(note)
+                    key_sig = note
+                    tt = mido.tick2second(note.time, mid.ticks_per_beat, new_tempo)
+                    ftime += tt
+                elif dnote['type'] == 'end_of_track':
+                    t.append(note)
+                    break
+
+
 
             tt = mido.tick2second(note.time, mid.ticks_per_beat, new_tempo)
             ftime += tt
@@ -63,8 +80,8 @@ for file in files:
                 t = mido.MidiTrack()
                 mid.tracks.append(t)
 
-                for msg in metad:
-                    t.append(msg)
+                t.append(key_sig)
+                t.append(time_sig)
                 t.append(tempoEvent)
                 ftime -= maxtime
                 fnum += 1
